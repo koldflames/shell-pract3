@@ -5,63 +5,67 @@
  * @n: type int number.
  * Return: Lenght of a number.
  */
+
 int get_len(int n)
 {
+	int length;
 	unsigned int n1;
-	int lenght = 1;
 
-	if (n < 0)
+	if (n == 0)
+		return (1);
+
+	length = (n < 0) ? 1 : 0; /* Initialize length to 1 if n is negative */
+
+	/* Convert negative number to positive for calculations */
+	n1 = (n < 0) ? -n : n;
+
+	/* Calculate the length using a loop */
+	while (n1 > 0)
 	{
-		lenght++;
-		n1 = n * -1;
-	}
-	else
-	{
-		n1 = n;
-	}
-	while (n1 > 9)
-	{
-		lenght++;
-		n1 = n1 / 10;
+		length++;
+		n1 /= 10;
 	}
 
-	return (lenght);
+	return (length);
 }
+
+
 /**
  * aux_itoa - function converts int to string.
  * @n: type int number
  * Return: String.
  */
+
 char *aux_itoa(int n)
 {
-	unsigned int n1;
-	int lenght = get_len(n);
+	int n1 = n;
+	int i;
+	int length = get_len(n);
+	int isNegative = 0;
 	char *buffer;
-
-	buffer = malloc(sizeof(char) * (lenght + 1));
-	if (buffer == 0)
-		return (NULL);
-
-	*(buffer + lenght) = '\0';
 
 	if (n < 0)
 	{
-		n1 = n * -1;
-		buffer[0] = '-';
-	}
-	else
-	{
-		n1 = n;
+		isNegative = 1;
+		n1 = -n;
+		length++;
 	}
 
-	lenght--;
-	do {
-		*(buffer + lenght) = (n1 % 10) + '0';
-		n1 = n1 / 10;
-		lenght--;
+	buffer = malloc(sizeof(char) * (length + 1));
+	if (buffer == NULL)
+		return (NULL);
+
+	buffer[length] = '\0';
+
+	for (i = length - 1; i >= isNegative; i--)
+	{
+		buffer[i] = (n1 % 10) + '0';
+		n1 /= 10;
 	}
-	while (n1 > 0)
-		;
+
+	if (isNegative)
+		buffer[0] = '-';
+
 	return (buffer);
 }
 
@@ -70,31 +74,26 @@ char *aux_itoa(int n)
  * @s: input string.
  * Return: integer.
  */
+
 int _atoi(char *s)
 {
-	unsigned int count = 0, size = 0, oi = 0, pn = 1, m = 1, i;
+	int result = 0;
+	int sign = 1;
+	int i = 0;
 
-	while (*(s + count) != '\0')
+	/* Check for a negative sign */
+	if (s[i] == '-')
 	{
-		if (size > 0 && (*(s + count) < '0' || *(s + count) > '9'))
-			break;
-
-		if (*(s + count) == '-')
-			pn *= -1;
-
-		if ((*(s + count) >= '0') && (*(s + count) <= '9'))
-		{
-			if (size > 0)
-				m *= 10;
-			size++;
-		}
-		count++;
+		sign = -1;
+		i++;
 	}
 
-	for (i = count - size; i < count; i++)
+	/* Convert the string to an integer */
+	while (s[i] >= '0' && s[i] <= '9')
 	{
-		oi = oi + ((*(s + i) - 48) * m);
-		m /= 10;
+		result = result * 10 + (s[i] - '0');
+		i++;
 	}
-	return (oi * pn);
+
+	return (result * sign);
 }
