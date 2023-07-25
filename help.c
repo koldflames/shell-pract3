@@ -146,7 +146,7 @@ void aux_help_general(void)
 	unsigned long int i;
 	char *help_buffer;
 	const char *help_messages[] = {
-		"^-^ Koldflames bash, version 1.0 (1)-release\n",
+		"--> Enoh Koldflames bash, version 1.0 (1)-release\n",
 		"These shell commands are defined internally. Type 'help' to see the list.\n",
 		"Type 'help name' to find out more about the function 'name'.\n\n",
 		"alias: alias [name=['string']]\ncd: cd [-L|[-P [-e]] [-@]] [dir]\n",
