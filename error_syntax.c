@@ -15,6 +15,7 @@ int repeated_char(char *input, int i)
 	return (i);
 }
 
+
 /**
  * error_sep_op - finds syntax errors
  *
@@ -24,49 +25,62 @@ int repeated_char(char *input, int i)
  * Return: index of error. 0 when there are no
  * errors
  */
+
 int error_sep_op(char *input, int i, char last)
 {
-	int count;
+	int count = 0;
 
-	count = 0;
+	/* If the end of the input string is reached, return 0 (no errors) */
 	if (*input == '\0')
 		return (0);
 
+	/* Skip whitespaces and continue checking the next character */
 	if (*input == ' ' || *input == '\t')
 		return (error_sep_op(input + 1, i + 1, last));
 
+	/* If the current character is a semicolon (';') */
 	if (*input == ';')
-		if (last == '|' || last == '&' || last == ';')
-			return (i);
-
-	if (*input == '|')
 	{
+		/* Check if the last character was '|', '&', or ';' */
+		if (last == '|' || last == '&' || last == ';')
+			return (i); /* Return the index 'i' as an error */
+	}
+	/* If the current character is a pipe ('|') */
+	else if (*input == '|')
+	{
+		/* Check if the last character was ';', '&', or '|' */
 		if (last == ';' || last == '&')
-			return (i);
+			return (i); /* Return the index 'i' as an error */
 
+		/* If the last character was '|', check for consecutive occurrences */
 		if (last == '|')
 		{
 			count = repeated_char(input, 0);
 			if (count == 0 || count > 1)
-				return (i);
+				return (i); /* Return the index 'i' as an error */
 		}
 	}
-
-	if (*input == '&')
+	/* If the current character is an ampersand ('&') */
+	else if (*input == '&')
 	{
+		/* Check if the last character was ';', '|', or '&' */
 		if (last == ';' || last == '|')
-			return (i);
+			return (i); /* Return the index 'i' as an error */
 
+		/* If the last character was '&', check for consecutive occurrences */
 		if (last == '&')
 		{
 			count = repeated_char(input, 0);
 			if (count == 0 || count > 1)
-				return (i);
+				return (i); /* Return the index 'i' as an error */
 		}
 	}
 
+	/* Continue checking the next character and increment 'i' */
 	return (error_sep_op(input + 1, i + 1, *input));
 }
+
+
 
 /**
  * first_char - finds index of the first char
@@ -75,22 +89,30 @@ int error_sep_op(char *input, int i, char last)
  * @i: index
  * Return: 1 if there is an error. 0 in other case.
  */
+
 int first_char(char *input, int *i)
 {
+	*i = 0; /* Initialize the index to 0 */
 
-	for (*i = 0; input[*i]; *i += 1)
+	while (input[*i] != '\0')
 	{
 		if (input[*i] == ' ' || input[*i] == '\t')
-			continue;
-
-		if (input[*i] == ';' || input[*i] == '|' || input[*i] == '&')
-			return (-1);
-
-		break;
+		{
+			(*i)++; /* Skip whitespaces and continue checking the next character */
+		}
+		else if (input[*i] == ';' || input[*i] == '|' || input[*i] == '&')
+		{
+			return (-1); /* Return -1 to indicate an error if any of the separators is found */
+		}
+		else
+		{
+			break; /* Break the loop when a valid character is found */
+		}
 	}
 
-	return (0);
+	return (0); /* Return 0 if a valid character is found (no error) */
 }
+
 
 /**
  * print_syntax_error - prints when a syntax error is found
@@ -101,49 +123,46 @@ int first_char(char *input, int *i)
  * @bool: to control msg error
  * Return: no return
  */
+
 void print_syntax_error(data_shell *datash, char *input, int i, int bool)
 {
-	char *msg, *msg2, *msg3, *error, *counter;
+	char *msg = NULL;
+	char *error, *counter;
+	int msg_len, program_name_len;
+	const char *error_template = ": Syntax error: \"%c\" unexpected\n";
 	int length;
 
-	if (input[i] == ';')
+	if (input[i] == ';' && (bool == 0 || input[i - 1] == ';'))
 	{
-		if (bool == 0)
-			msg = (input[i + 1] == ';' ? ";;" : ";");
-		else
-			msg = (input[i - 1] == ';' ? ";;" : ";");
+		msg = (input[i + 1] == ';' ? ";;" : ";");
+	}
+	else if (input[i] == '|' && input[i + 1] == '|')
+	{
+		msg = "||";
+	}
+	else if (input[i] == '&' && input[i + 1] == '&')
+	{
+		msg = "&&";
 	}
 
-	if (input[i] == '|')
-		msg = (input[i + 1] == '|' ? "||" : "|");
-
-	if (input[i] == '&')
-		msg = (input[i + 1] == '&' ? "&&" : "&");
-
-	msg2 = ": Syntax error: \"";
-	msg3 = "\" unexpected\n";
-	counter = aux_itoa(datash->counter);
-	length = _strlen(datash->av[0]) + _strlen(counter);
-	length += _strlen(msg) + _strlen(msg2) + _strlen(msg3) + 2;
-
-	error = malloc(sizeof(char) * (length + 1));
-	if (error == 0)
+	if (msg != NULL)
 	{
+		counter = aux_itoa(datash->counter);
+		program_name_len = _strlen(datash->av[0]);
+		msg_len = _strlen(msg);
+		length = program_name_len + _strlen(counter) + msg_len + _strlen(error_template) + 1;
+
+		error = malloc(length);
+		if (error != NULL)
+		{
+			snprintf(error, length, "%s: %s: Syntax error: \"%s\" unexpected\n", datash->av[0], counter, msg);
+			write(STDERR_FILENO, error, length - 1);
+			free(error);
+		}
 		free(counter);
-		return;
 	}
-	_strcpy(error, datash->av[0]);
-	_strcat(error, ": ");
-	_strcat(error, counter);
-	_strcat(error, msg2);
-	_strcat(error, msg);
-	_strcat(error, msg3);
-	_strcat(error, "\0");
-
-	write(STDERR_FILENO, error, length);
-	free(error);
-	free(counter);
 }
+
 
 /**
  * check_syntax_error - intermediate function to
@@ -153,25 +172,43 @@ void print_syntax_error(data_shell *datash, char *input, int i, int bool)
  * @input: input string
  * Return: 1 if there is an error. 0 in other case
  */
+
 int check_syntax_error(data_shell *datash, char *input)
 {
 	int begin = 0;
-	int f_char = 0;
+	int f_char = first_char(input, &begin);
 	int i = 0;
+	int count;
+	char last;
 
-	f_char = first_char(input, &begin);
 	if (f_char == -1)
 	{
 		print_syntax_error(datash, input, begin, 0);
 		return (1);
 	}
 
-	i = error_sep_op(input + begin, 0, *(input + begin));
-	if (i != 0)
+	/* New logic to check for syntax error */
+	last = *(input + begin);
+	while (input[begin + i] != '\0')
 	{
-		print_syntax_error(datash, input, begin + i, 1);
-		return (1);
+		if (input[begin + i] == ';' || input[begin + i] == '|' || input[begin + i] == '&')
+		{
+			if (input[begin + i] == last)
+			{
+				count = repeated_char(input + begin + i, 0);
+				if (count == 0 || count > 1)
+				{
+					print_syntax_error(datash, input, begin + i, 1);
+					return (1);
+				}
+			}
+			last = input[begin + i];
+		}
+		i++;
 	}
 
 	return (0);
 }
+
+
+

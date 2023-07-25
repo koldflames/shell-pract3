@@ -6,26 +6,33 @@
  * @datash: data relevant (status and args)
  * Return: 0 on success.
  */
+
 int exit_shell(data_shell *datash)
 {
-	unsigned int ustatus;
-	int is_digit;
-	int str_len;
-	int big_number;
-
 	if (datash->args[1] != NULL)
 	{
-		ustatus = _atoi(datash->args[1]);
-		is_digit = _isdigit(datash->args[1]);
-		str_len = _strlen(datash->args[1]);
-		big_number = ustatus > (unsigned int)INT_MAX;
-		if (!is_digit || str_len > 10 || big_number)
+		/* Convert the argument to an unsigned integer using strtol */
+		char *endptr;
+		unsigned long ustatus = strtoul(datash->args[1], &endptr, 10);
+
+		/* Check for valid conversion and the absence of extra characters */
+		if (*endptr != '\0' || (ustatus == ULONG_MAX && errno == ERANGE))
 		{
 			get_error(datash, 2);
 			datash->status = 2;
 			return (1);
 		}
-		datash->status = (ustatus % 256);
+
+		/* Check if the value is within the range of a signed integer */
+		if (ustatus > INT_MAX)
+		{
+			get_error(datash, 2);
+			datash->status = 2;
+			return (1);
+		}
+
+		datash->status = (int)(ustatus % 256);
 	}
+
 	return (0);
 }

@@ -5,26 +5,26 @@
  * @s: input string.
  * Return: no return.
  */
+
 void rev_string(char *s)
 {
-	int count = 0, i, j;
-	char *str, temp;
+	int count = 0, i;
+	char *start = s, *end = s;
+	char temp;
 
-	while (count >= 0)
+	while (*end != '\0')
 	{
-		if (s[count] == '\0')
-			break;
 		count++;
+		end++;
 	}
-	str = s;
+	end--; /* Move 'end' to the last non-null character */
 
-	for (i = 0; i < (count - 1); i++)
+	for (i = 0; i < count / 2; i++)
 	{
-		for (j = i + 1; j > 0; j--)
-		{
-			temp = *(str + j);
-			*(str + j) = *(str + (j - 1));
-			*(str + (j - 1)) = temp;
-		}
+		temp = *start;
+		*start = *end;
+		*end = temp;
+		start++;
+		end--;
 	}
 }

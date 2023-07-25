@@ -8,20 +8,24 @@
  *
  * Return: 0 if are not equal. Another value if they are.
  */
+
 int cmp_env_name(const char *nenv, const char *name)
 {
-	int i;
+	int i = 0;
 
-	for (i = 0; nenv[i] != '='; i++)
+	while (nenv[i] && nenv[i] != '=' && nenv[i] == name[i])
 	{
-		if (nenv[i] != name[i])
-		{
-			return (0);
-		}
+		i++;
 	}
 
-	return (i + 1);
+	if (nenv[i] == '=' && name[i] == '\0')
+	{
+		return (i + 1);
+	}
+
+	return (0);
 }
+
 
 /**
  * _getenv - get an environment variable
@@ -31,29 +35,30 @@ int cmp_env_name(const char *nenv, const char *name)
  * Return: value of the environment variable if is found.
  * In other case, returns NULL.
  */
+
 char *_getenv(const char *name, char **_environ)
 {
-	char *ptr_env;
-	int i, mov;
+	char *ptr_env = NULL;
+	int i, j;
 
-	/* Initialize ptr_env value */
-	ptr_env = NULL;
-	mov = 0;
-	/* Compare all environment variables */
-	/* environ is declared in the header file */
-	for (i = 0; _environ[i]; i++)
+	for (i = 0; _environ[i] != NULL; i++)
 	{
-		/* If name and env are equal */
-		mov = cmp_env_name(_environ[i], name);
-		if (mov)
+		j = 0;
+		while (_environ[i][j] != '=' && _environ[i][j] == name[j])
 		{
-			ptr_env = _environ[i];
+			j++;
+		}
+
+		if (_environ[i][j] == '=' && name[j] == '\0')
+		{
+			ptr_env = _environ[i] + j + 1;
 			break;
 		}
 	}
 
-	return (ptr_env + mov);
+	return (ptr_env);
 }
+
 
 /**
  * _env - prints the evironment variables
@@ -61,20 +66,28 @@ char *_getenv(const char *name, char **_environ)
  * @datash: data relevant.
  * Return: 1 on success.
  */
+
 int _env(data_shell *datash)
 {
-	int i, j;
+	int i = 0;
+	int j;
 
-	for (i = 0; datash->_environ[i]; i++)
+	while (datash->_environ[i] != NULL)
 	{
-
-		for (j = 0; datash->_environ[i][j]; j++)
-			;
+		j = 0;
+		while (datash->_environ[i][j] != '\0')
+			j++;
 
 		write(STDOUT_FILENO, datash->_environ[i], j);
 		write(STDOUT_FILENO, "\n", 1);
-	}
-	datash->status = 0;
 
+		i++;
+	}
+
+	datash->status = 0;
 	return (1);
 }
+
+
+
+

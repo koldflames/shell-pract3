@@ -6,11 +6,13 @@
  * @in: input string
  * Return: input without comments
  */
+
+
 char *without_comment(char *in)
 {
-	int i, up_to;
+	int i, j;
+	char *new_str;
 
-	up_to = 0;
 	for (i = 0; in[i]; i++)
 	{
 		if (in[i] == '#')
@@ -22,15 +24,28 @@ char *without_comment(char *in)
 			}
 
 			if (in[i - 1] == ' ' || in[i - 1] == '\t' || in[i - 1] == ';')
-				up_to = i;
-		}
-	}
+			{
+				/* Allocate memory for the new string without the comment */
+				new_str = (char *)malloc((i + 1) * sizeof(char));
+				if (new_str == NULL)
+				{
+					perror("Memory allocation error");
+					exit(1);
+				}
 
-	if (up_to != 0)
-	{
-		in = _realloc(in, i, up_to + 1);
-		in[up_to] = '\0';
+				/* Copy characters before the comment into the new string */
+				for (j = 0; j < i; j++)
+				{
+					new_str[j] = in[j];
+				}
+
+				new_str[j] = '\0';
+				free(in);
+				return (new_str);
+			}
+		}
 	}
 
 	return (in);
 }
+
